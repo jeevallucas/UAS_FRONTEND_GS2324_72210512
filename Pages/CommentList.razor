@@ -1,0 +1,82 @@
+@page "/comments"
+@using System.Net.Http
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<PageTitle>COMMENTS</PageTitle>
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .subtext {
+        color: #777;
+    }
+
+    .post-group {
+        background-color: #ffffff;
+        padding: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-deck {
+        margin-top: 20px;
+    }
+
+    .card {
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+    }
+
+    .card:hover {
+        transform: scale(1.05);
+    }
+</style>
+
+<h1><b>COMMENTS</b></h1>
+<p class="subtext">(menampilkan photos menggunakan <b>CARD</b>)</p>
+
+<p></p>
+
+@if (comments == null)
+{
+    <p><em>Loading...</em></p>
+} 
+else
+{
+    @foreach (var group in comments.GroupBy(c => c.postId))
+    {
+        <div class="post-group">
+            <h4>Post @group.Key</h4>
+            <div class="card-deck">
+                @foreach (var ct in group)
+                {
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted">Comment @ct.id</h6>
+                            <p class="card-text">
+                                <strong></strong> 
+                                <span style="font-weight: bold; display: inline;">@ct.name</span>
+                                <br />
+                                <strong></strong>
+                                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=@ct.email" target="_blank">@ct.email</a>
+                            </p>
+                            <p class="card-text"><strong></strong> @ct.body</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        comments = await Http.GetFromJsonAsync<List<Comment>>("https://jsonplaceholder.typicode.com/comments");
+    }
+
+    protected List<Comment> comments = new();
+}

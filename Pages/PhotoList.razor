@@ -1,0 +1,154 @@
+@page "/photos"
+@using System.Net.Http
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<PageTitle>Photos</PageTitle>
+
+<h1><b>PHOTOS</b></h1>
+<p class="subtext">(menampilkan photos menggunakan <b>GRID/CARD</b>)</p>
+
+<div class="loading" style="@(!photos.Any() ? "" : "display:none")">
+    <div class="spinner-border text-primary" role="status">
+        <span class="sr-only"></span>
+    </div>
+</div>
+
+@foreach (var group in albumGroups)
+{
+    <div class="album-group">
+        <h2><b>Album @group.Key</b></h2>
+        <div class="photo-grid">
+            @foreach (var pt in group)
+            {
+                <div class="photo-card">
+                    <div class="photo-thumbnail">
+                        <a href="@pt.url" target="_blank">
+                            <img src="@pt.thumbnailUrl" alt="@pt.title" />
+                        </a>
+                    </div>
+                    <div class="photo-details">
+                        <div class="detail"><strong>Details</strong><br>@pt.id | <span class="title">@pt.title</span></div>
+                        <div class="detail"><span class="long-url"><a href="@pt.url" target="_blank">@pt.url</a></span></div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<style>
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    h1 {
+        color: #333;
+    }
+
+    .subtext {
+        color: #777;
+    }
+
+    .loading {
+        margin-top: 20px;
+        color: #888;
+    }
+
+    .album-group {
+        margin-bottom: 40px;
+        background-color: #f9f9f9;
+        padding: 15px;
+    }
+
+    h2 {
+        color: #555;
+        font-size: 1.5em;
+        margin-bottom: 15px;
+    }
+
+    .photo-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .photo-card {
+        width: 100%;
+        max-width: 150px;
+        background-color: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+
+    .photo-card:hover {
+        transform: scale(1.08);
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .photo-thumbnail {
+        overflow: hidden;
+        border-bottom: 1px solid #ddd;
+    }
+
+    img {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .photo-details {
+        max-height: 300px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .detail {
+        margin-bottom: 8px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .long-url {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .title {
+        overflow: visible;
+        white-space: normal;
+        word-wrap: break-word;
+    }
+
+    a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        photos = await Http.GetFromJsonAsync<List<Photo>>("https://jsonplaceholder.typicode.com/photos");
+
+        albumGroups = photos.GroupBy(p => p.albumId).ToList();
+    }
+
+    protected List<Photo> photos = new();
+
+    protected List<IGrouping<int, Photo>> albumGroups = new();
+}
